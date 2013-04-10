@@ -83,34 +83,19 @@ void sgemm( int m, int n, int d, float *A, float *C )
     		}
     		_mm_storeu_ps(C + i+j*n, newValue);
 		}
-		for( int i = (n - (n % 4)); i < n; i++ ) {
-			/*__m128 newValue = _mm_loadu_ps (C + i+j*n);
-    		for( int k = 0; k < (m - (m % 4)); k += 4 ) {
-    			__m128 value2 = _mm_load1_ps (A + j*(n+1)+k*(n));
-    			__m128 value1 = _mm_loadu_ps (A + i+k*n);
-				__m128 intValue = _mm_mul_ps (value1, value2);
-				newValue = _mm_add_ps (intValue, newValue);
-				value2 = _mm_load1_ps (A + j*(n+1)+(k+1)*(n));
-    			value1 = _mm_loadu_ps (A + i+(k+1)*n);
-				intValue = _mm_mul_ps (value1, value2);
-				newValue = _mm_add_ps (intValue, newValue);
-				value2 = _mm_load1_ps (A + j*(n+1)+(k+2)*(n));
-    			value1 = _mm_loadu_ps (A + i+(k+2)*n);
-				intValue = _mm_mul_ps (value1, value2);
-				newValue = _mm_add_ps (intValue, newValue);
-				value2 = _mm_load1_ps (A + j*(n+1)+(k+3)*(n));
-    			value1 = _mm_loadu_ps (A + i+(k+3)*n);
-				intValue = _mm_mul_ps (value1, value2);
-				newValue = _mm_add_ps (intValue, newValue);
+    	for(int i = (n - (n % 4)); i < n; i++) {
+    		float sum = C[i+j*n]; 
+    		for(int k = 0; k < (m - (m % 4)); k += 4) {
+    			sum += A[i+k*(n)] * A[j*(n+1)+k*(n)];
+    			sum += A[i+(k+1)*(n)] * A[j*(n+1)+(k+1)*(n)];
+    			sum += A[i+(k+2)*(n)] * A[j*(n+1)+(k+2)*(n)];
+    			sum += A[i+(k+3)*(n)] * A[j*(n+1)+(k+3)*(n)];
     		}
     		for( int k = (m - (m % 4)); k < m; k += 1) {
-    			__m128 value2 = _mm_load1_ps (A + j*(n+1)+k*(n));
-    			__m128 value1 = _mm_loadu_ps (A + i+k*n);
-				__m128 intValue = _mm_mul_ps (value1, value2);
-				newValue = _mm_add_ps (intValue, newValue);
+    			sum += A[i+k*(n)] * A[j*(n+1)+k*(n)];
     		}
-    		_mm_storeu_ps(C + i+j*n, newValue);*/
-		}
+    		C[i+j*n] = sum;
+    	}
 	}
 }
 
