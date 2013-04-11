@@ -54,6 +54,7 @@
 // C[i+j*n] += A[i+k*(n)] * A[j*(n+1)+k*(n)];
 void sgemm( int m, int n, int d, float *A, float *C )
 { 
+	/*
 	for (int k = 0; k < m; k++) {
 		for (int j = 0; j < n; j +=4) {
 			__m128 transposeValue0 = _mm_load1_ps(A + j*(n+1) + k * n);
@@ -86,7 +87,57 @@ void sgemm( int m, int n, int d, float *A, float *C )
 				_mm_storeu_ps(C + i + (j+3) * n, computeValue);
 			}
 		}
-	} 
+	} */
+	for (int j = 0; j < n; j++) {
+		for (int k = 0; k < m; k += 4) {
+			float* basej = A + j * (n + 1);
+			__m128 transposeValue0 = _mm_load1_ps(basej + k * n);
+			__m128 transposeValue1 = _mm_load1_ps(basej + (k + 1) * n);
+			__m128 transposeValue2 = _mm_load1_ps(basej + (k + 2) * n);
+			__m128 transposeValue3 = _mm_load1_ps(basej + (k + 3) * n);
+
+			__m128 storedValues;
+			__m128 columnValues;
+			__m128 storedValues2;
+			__m128 columnValues2;
+			for (int i = 0; i < n; i += 8) {
+				float* position = C + i + j * n;
+				storedValues = _mm_loadu_ps(position);
+				storedValues2 = _mm_loadu_ps(position + 4);
+
+				//first computation
+				columnValues = _mm_loadu_ps(A + i + k * n);
+				storedValues = _mm_add_ps(storedValues, _mm_mul_ps(transposeValue0, columnValues));
+
+				columnValues2 = _mm_loadu_ps(A + (i + 4) + k * n);
+				storedValues2 = _mm_add_ps(storedValues2, _mm_mul_ps(transposeValue0, columnValues2));
+
+				//second computation
+				columnValues = _mm_loadu_ps(A + i + (k + 1) * n);
+				storedValues = _mm_add_ps(storedValues, _mm_mul_ps(transposeValue1, columnValues));
+
+				columnValues2 = _mm_loadu_ps(A + (i + 4) + (k + 1) * n);
+				storedValues2 = _mm_add_ps(storedValues2, _mm_mul_ps(transposeValue1, columnValues2));
+
+				//third computation
+				columnValues = _mm_loadu_ps(A + i + (k + 2) * n);
+				storedValues = _mm_add_ps(storedValues, _mm_mul_ps(transposeValue2, columnValues));
+
+				columnValues2 = _mm_loadu_ps(A + (i + 4) + (k + 2) * n);
+				storedValues2 = _mm_add_ps(storedValues2, _mm_mul_ps(transposeValue2, columnValues2));
+
+				//fourth computation
+				columnValues = _mm_loadu_ps(A + i + (k + 3) * n);
+				storedValues = _mm_add_ps(storedValues, _mm_mul_ps(transposeValue3, columnValues));
+
+				columnValues2 = _mm_loadu_ps(A + (i + 4) + (k + 3) * n);
+				storedValues2 = _mm_add_ps(storedValues2, _mm_mul_ps(transposeValue3, columnValues2	));
+
+				_mm_storeu_ps(position, storedValues);
+				_mm_storeu_ps(position + 4, storedValues2);
+			}
+		}
+	}
     /*
     for( int j = 0; j < n; j++ ) {
     	for( int i = 0; i < (n - (n % 4)); i += 4 ){
