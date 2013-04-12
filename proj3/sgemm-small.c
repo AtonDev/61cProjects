@@ -21,33 +21,34 @@ void sgemm( int m, int n, int d, float *A, float *C )
 				float* position = C + i + j * n;
 				storedValues = _mm_loadu_ps(position);
 				storedValues2 = _mm_loadu_ps(position + 4);
-
+				float* basei = A + i;
+				float* basei4 = A + i + 4;
 				//first computation
-				columnValues = _mm_loadu_ps(A + i + k * n);
+				columnValues = _mm_loadu_ps(basei + k * n);
 				storedValues = _mm_add_ps(storedValues, _mm_mul_ps(transposeValue0, columnValues));
 
-				columnValues2 = _mm_loadu_ps(A + (i + 4) + k * n);
+				columnValues2 = _mm_loadu_ps(basei4 + k * n);
 				storedValues2 = _mm_add_ps(storedValues2, _mm_mul_ps(transposeValue0, columnValues2));
 
 				//second computation
-				columnValues = _mm_loadu_ps(A + i + (k + 1) * n);
+				columnValues = _mm_loadu_ps(basei + (k + 1) * n);
 				storedValues = _mm_add_ps(storedValues, _mm_mul_ps(transposeValue1, columnValues));
 
-				columnValues2 = _mm_loadu_ps(A + (i + 4) + (k + 1) * n);
+				columnValues2 = _mm_loadu_ps(basei4 + (k + 1) * n);
 				storedValues2 = _mm_add_ps(storedValues2, _mm_mul_ps(transposeValue1, columnValues2));
 
 				//third computation
-				columnValues = _mm_loadu_ps(A + i + (k + 2) * n);
+				columnValues = _mm_loadu_ps(basei + (k + 2) * n);
 				storedValues = _mm_add_ps(storedValues, _mm_mul_ps(transposeValue2, columnValues));
 
-				columnValues2 = _mm_loadu_ps(A + (i + 4) + (k + 2) * n);
+				columnValues2 = _mm_loadu_ps(basei4 + (k + 2) * n);
 				storedValues2 = _mm_add_ps(storedValues2, _mm_mul_ps(transposeValue2, columnValues2));
 
 				//fourth computation
-				columnValues = _mm_loadu_ps(A + i + (k + 3) * n);
+				columnValues = _mm_loadu_ps(basei + (k + 3) * n);
 				storedValues = _mm_add_ps(storedValues, _mm_mul_ps(transposeValue3, columnValues));
 
-				columnValues2 = _mm_loadu_ps(A + (i + 4) + (k + 3) * n);
+				columnValues2 = _mm_loadu_ps(basei4 + (k + 3) * n);
 				storedValues2 = _mm_add_ps(storedValues2, _mm_mul_ps(transposeValue3, columnValues2	));
 
 				_mm_storeu_ps(position, storedValues);
