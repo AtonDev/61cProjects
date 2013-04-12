@@ -6,28 +6,28 @@
 void sgemm( int m, int n, int d, float *A, float *C )
 {
 	for (int j = 0; j < n; j++) {
-		for (int k = 0; k < m; k += 4) {
+		for (int k = 0; k < (m-(m%4)); k += 4) {
 			float* basej = A + j * (n + 1);
 			__m128 transposeValue0 = _mm_load1_ps(basej + k * n);
 			__m128 transposeValue1 = _mm_load1_ps(basej + (k + 1) * n);
 			__m128 transposeValue2 = _mm_load1_ps(basej + (k + 2) * n);
 			__m128 transposeValue3 = _mm_load1_ps(basej + (k + 3) * n);
 
-			__m128 storedValues;
+			/*__m128 storedValues;
 			__m128 columnValues;
 			__m128 storedValues2;
-			__m128 columnValues2;
-			for (int i = 0; i < n; i += 8) {
+			__m128 columnValues2;*/
+			for (int i = 0; i < (n-(n%8)); i += 8) {
 				float* position = C + i + j * n;
-				storedValues = _mm_loadu_ps(position);
-				storedValues2 = _mm_loadu_ps(position + 4);
+				__m128 storedValues = _mm_loadu_ps(position);
+				__m128 storedValues2 = _mm_loadu_ps(position + 4);
 				float* basei = A + i;
 				float* basei4 = A + i + 4;
 				//first computation
-				columnValues = _mm_loadu_ps(basei + k * n);
+				__m128 columnValues = _mm_loadu_ps(basei + k * n);
 				storedValues = _mm_add_ps(storedValues, _mm_mul_ps(transposeValue0, columnValues));
 
-				columnValues2 = _mm_loadu_ps(basei4 + k * n);
+				__m128 columnValues2 = _mm_loadu_ps(basei4 + k * n);
 				storedValues2 = _mm_add_ps(storedValues2, _mm_mul_ps(transposeValue0, columnValues2));
 
 				//second computation
@@ -54,7 +54,80 @@ void sgemm( int m, int n, int d, float *A, float *C )
 				_mm_storeu_ps(position, storedValues);
 				_mm_storeu_ps(position + 4, storedValues2);
 			}
+			/*for (int i = (n-(n%8)); i < (n-(n%4)); i += 4) {
+				float* position = C + i + j * n;
+				storedValues = _mm_loadu_ps(position);
+				float* basei = A + i;
+				//first computation
+				columnValues = _mm_loadu_ps(basei + k * n);
+				storedValues = _mm_add_ps(storedValues, _mm_mul_ps(transposeValue0, columnValues));
+	
+				//second computation
+				columnValues = _mm_loadu_ps(basei + (k + 1) * n);
+				storedValues = _mm_add_ps(storedValues, _mm_mul_ps(transposeValue1, columnValues));
+
+				//third computation
+				columnValues = _mm_loadu_ps(basei + (k + 2) * n);
+				storedValues = _mm_add_ps(storedValues, _mm_mul_ps(transposeValue2, columnValues));
+
+				//fourth computation
+				columnValues = _mm_loadu_ps(basei + (k + 3) * n);
+				storedValues = _mm_add_ps(storedValues, _mm_mul_ps(transposeValue3, columnValues));
+
+				_mm_storeu_ps(position, storedValues);
+			}
+			for (int i = (n-(n%4)); i < n; i++) {
+				C[i+j*n] += A[i+k*(n)] * A[j*(n+1)+k*(n)];
+				C[i+j*n] += A[i+(k+1)*(n)] * A[j*(n+1)+(k+1)*(n)];
+				C[i+j*n] += A[i+(k+2)*(n)] * A[j*(n+1)+(k+2)*(n)];
+				C[i+j*n] += A[i+(k+3)*(n)] * A[j*(n+1)+(k+3)*(n)];
+			}*/
+			for (int i = (n-(n%8)); i < n; i++) {
+				C[i+j*n] += A[i+k*(n)] * A[j*(n+1)+k*(n)];
+				C[i+j*n] += A[i+(k+1)*(n)] * A[j*(n+1)+(k+1)*(n)];
+				C[i+j*n] += A[i+(k+2)*(n)] * A[j*(n+1)+(k+2)*(n)];
+				C[i+j*n] += A[i+(k+3)*(n)] * A[j*(n+1)+(k+3)*(n)];
+			}
 		}
+		for (int k = (m-(m%4)); k < m; k += 1) {
+			/*float* basej = A + j * (n + 1);
+			__m128 transposeValue0 = _mm_load1_ps(basej + k * n);
+
+			__m128 storedValues;
+			__m128 columnValues;
+			__m128 storedValues2;
+			__m128 columnValues2;
+			for (int i = 0; i < (n-(n%8)); i += 8) {
+				float* position = C + i + j * n;
+				storedValues = _mm_loadu_ps(position);
+				storedValues2 = _mm_loadu_ps(position + 4);
+				float* basei = A + i;
+				float* basei4 = A + i + 4;
+				//first computation
+				columnValues = _mm_loadu_ps(basei + k * n);
+				storedValues = _mm_add_ps(storedValues, _mm_mul_ps(transposeValue0, columnValues));
+
+				columnValues2 = _mm_loadu_ps(basei4 + k * n);
+				storedValues2 = _mm_add_ps(storedValues2, _mm_mul_ps(transposeValue0, columnValues2));
+
+				_mm_storeu_ps(position, storedValues);
+				_mm_storeu_ps(position + 4, storedValues2);
+			}*/
+			/*for (int i = (n-(n%8)); i < (n-(n%4)); i += 4) {
+				float* position = C + i + j * n;
+				storedValues = _mm_loadu_ps(position);
+				float* basei = A + i;
+				//first computation
+				columnValues = _mm_loadu_ps(basei + k * n);
+				storedValues = _mm_add_ps(storedValues, _mm_mul_ps(transposeValue0, columnValues));
+
+				_mm_storeu_ps(position, storedValues);
+			}*/
+			for (int i = 0; i < n; i++) {
+				C[i+j*n] += A[i+k*(n)] * A[j*(n+1)+k*(n)];
+			}
+		}
+
 	}
     
 }
