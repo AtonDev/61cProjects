@@ -195,15 +195,15 @@ void sgemm( int m, int n, int d, float *A, float *C )
 					_mm_storeu_ps(position + 4, storedValues2);
 				}
 				for (int i = (n-(n%8)); i < n; i++) {
-					C[i+j*n] += A[i+k*(n)] * A[j*(n+1)+k*(n)];
-					C[i+j*n] += A[i+(k+1)*(n)] * A[j*(n+1)+(k+1)*(n)];
-					C[i+j*n] += A[i+(k+2)*(n)] * A[j*(n+1)+(k+2)*(n)];
-					C[i+j*n] += A[i+(k+3)*(n)] * A[j*(n+1)+(k+3)*(n)];
+					C[i+j*n] += A[i+k*n] * A[j*(n+1)+k*n];
+					C[i+j*n] += A[i+(k+1)*n] * A[j*(n+1)+(k+1)*n];
+					C[i+j*n] += A[i+(k+2)*n] * A[j*(n+1)+(k+2)*n];
+					C[i+j*n] += A[i+(k+3)*n] * A[j*(n+1)+(k+3)*n];
 				}
 			}
 			for (int k = (m-(m%4)); k < m; k += 1) {
 				for (int i = 0; i < n; i++) {
-					C[i+j*n] += A[i+k*(n)] * A[j*(n+1)+k*(n)];
+					C[i+j*n] += A[i+k*n] * A[j*(n+1)+k*n];
 				}
 			}
 
